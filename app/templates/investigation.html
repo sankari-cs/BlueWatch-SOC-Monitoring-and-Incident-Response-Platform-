@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import pager %}
+{% block title %}Investigation workspace · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">EVIDENCE</span><h1>Investigation workspace</h1><p>Search normalized events and trace each record to its preserved source fields.</p></div><a class="button primary" href="{{ url_for('web.ingest') }}">Import events →</a></section>
+<section class="panel">
+  <form method="get" class="filter-bar"><label class="search-field"><span aria-hidden="true">⌕</span><input name="q" value="{{ term }}" placeholder="Search user, host, IP, source, message"></label><label>Origin<select name="origin"><option value="">All origins</option><option value="imported" {% if origin=='imported' %}selected{% endif %}>Imported</option><option value="synthetic" {% if origin=='synthetic' %}selected{% endif %}>Synthetic</option></select></label><button class="button secondary" type="submit">Search</button><a class="text-link" href="{{ url_for('web.investigation') }}">Clear</a></form>
+  {% if page.items %}<div class="table-wrap"><table><thead><tr><th>Event time (UTC)</th><th>Type / outcome</th><th>User</th><th>Source IP</th><th>Host</th><th>Origin / source</th><th>Evidence</th></tr></thead><tbody>
+  {% for event in page.items %}<tr><td class="nowrap">{{ event.occurred_at.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ event.event_type }}{% if event.outcome %}<small>{{ event.outcome }}</small>{% endif %}</td><td>{{ event.username or '—' }}</td><td>{{ event.source_ip or '—' }}</td><td>{{ event.host or '—' }}</td><td><span class="badge origin-{{ event.origin }}">{{ event.origin }}</span><small>{{ event.source_name }}</small></td><td><details><summary>View source</summary><pre class="evidence-json">{{ event.original_fields|tojson(indent=2) }}</pre></details></td></tr>{% endfor %}
+  </tbody></table></div>{{ pager(page,'web.investigation',{'q':term,'origin':origin}) }}{% else %}<div class="empty-state"><span class="empty-icon">⌕</span><h3>No matching events</h3><p>Import an export or change the current filters.</p></div>{% endif %}
+</section>
+{% endblock %}

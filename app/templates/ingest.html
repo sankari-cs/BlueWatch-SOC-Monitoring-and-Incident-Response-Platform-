@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Data ingestion · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">TELEMETRY</span><h1>Data ingestion</h1><p>Validate JSON or JSONL events, preserve provenance, and evaluate the stored detection rules.</p></div></section>
+<div class="two-col align-start">
+  <section class="panel"><div class="panel-heading"><div><h2>Import an export</h2><p>Uploads are parsed in memory; files are never saved or executed.</p></div></div>
+    <form method="post" enctype="multipart/form-data" class="form-stack">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <label class="upload-box"><span class="upload-icon">⇧</span><strong>Select a JSON, JSONL, or NDJSON file</strong><small>Maximum 5 MB · UTF-8 · maximum 10,000 records</small><input required type="file" name="file" accept=".json,.jsonl,.ndjson,application/json"></label>
+      <button class="button primary" type="submit">Validate and import</button>
+    </form>
+    <div class="format-card"><h3>BlueWatch normalized JSONL v1</h3><p>Each line is one event object. Required: <code>source</code>, <code>timestamp</code> with timezone, and <code>event_type</code>. Authentication detections also require explicit <code>outcome</code>, <code>username</code>, and <code>source_ip</code>.</p><pre>{"schema_version":"1","source":"linux-auth","source_id":"evt-001","timestamp":"2026-10-27T10:00:00Z","event_type":"authentication","outcome":"failure","username":"analyst","source_ip":"203.0.113.5","host":"server-01","message":"login failed","fields":{"facility":"sshd"}}</pre></div>
+  </section>
+  <section class="panel"><div class="panel-heading"><div><h2>Try the synthetic fixture</h2><p>Opt-in training data; never mixed with imported evidence.</p></div><span class="badge origin-synthetic">synthetic</span></div>
+    <div class="notice warning"><strong>Clearly labeled test records</strong><span>The built-in fixture uses documentation-only IP addresses and a demo identity. It creates six synthetic authentication events to exercise the rules.</span></div>
+    <form method="post" action="{{ url_for('web.ingest_sample') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token }}"><button class="button secondary" type="submit">Import synthetic sample</button></form>
+    <div class="subtle-note">Retrying the fixture is safe. Exact duplicates are reported and not stored again.</div>
+  </section>
+</div>
+{% if result %}
+<section class="panel result-panel"><div class="panel-heading"><div><span class="eyebrow">RUN #{{ result.id }}</span><h2>Import results</h2></div><span class="badge origin-{{ result.origin }}">{{ result.origin }}</span></div>
+  <div class="result-counts"><div><strong>{{ result.accepted }}</strong><span>accepted</span></div><div><strong>{{ result.rejected }}</strong><span>rejected</span></div><div><strong>{{ result.skipped }}</strong><span>skipped</span></div><div><strong>{{ result.duplicates }}</strong><span>duplicates</span></div></div>
+  {% if errors %}<h3>Validation feedback</h3><ul class="error-list">{% for item in errors %}<li>Record {{ item.record }}: {{ item.error }}</li>{% endfor %}</ul>{% else %}<p class="success-text">No validation errors were recorded.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "auth_failure_burst",
+    "title": "Authentication failure burst",
+    "scenario": "Repeated authentication failures",
+    "steps": [
+      "Confirm the event source and verify its timestamp and timezone.",
+      "Review the linked events and determine whether the failures share a host, account, and source address.",
+      "Check approved change windows, service accounts, VPN or NAT context, and identity-provider records.",
+      "If the activity remains suspicious, document the account owner and affected system, then follow your organization's approved containment process.",
+      "Record evidence, decisions, approvals, and outcome in the case. Do not disable accounts or block network traffic from this application."
+    ]
+  },
+  {
+    "id": "suspicious_auth_sequence",
+    "title": "Failures followed by authentication success",
+    "scenario": "Repeated failures followed by a success",
+    "steps": [
+      "Validate the success and failure events against the source system and confirm the linked username and source address.",
+      "Check whether the successful session is expected for this user, host, time, and authentication method.",
+      "Review adjacent endpoint, VPN, and identity-provider evidence for additional context.",
+      "Escalate to the identity or endpoint owner when the sequence cannot be explained.",
+      "Document any proposed containment as a human-approved response action; BlueWatch never executes it."
+    ]
+  }
+]

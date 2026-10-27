@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import pager %}
+{% block title %}Alerts · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">TRIAGE QUEUE</span><h1>Alerts</h1><p>Explainable detections linked to source events. Alerts require analyst review.</p></div><a class="button primary" href="{{ url_for('web.ingest') }}">Import telemetry →</a></section>
+<section class="panel">
+  <form method="get" class="filter-bar"><label class="search-field"><span aria-hidden="true">⌕</span><input name="q" value="{{ term }}" placeholder="Search rule, host, user, IP"></label><label>Status<select name="status"><option value="">All statuses</option>{% for item in ['new','acknowledged','assigned','investigating','escalated','false_positive','resolved'] %}<option value="{{ item }}" {% if status==item %}selected{% endif %}>{{ item|replace('_',' ')|title }}</option>{% endfor %}</select></label><label>Severity<select name="severity"><option value="">All severities</option>{% for item in ['critical','high','medium','low','info'] %}<option value="{{ item }}" {% if severity==item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select></label><button class="button secondary" type="submit">Filter</button><a class="text-link" href="{{ url_for('web.alerts') }}">Clear</a></form>
+  {% if page.items %}<div class="table-wrap"><table><thead><tr><th>Alert</th><th>Severity</th><th>Status</th><th>Origin</th><th>User / source IP</th><th>Host</th><th>Evidence</th><th>Last seen</th></tr></thead><tbody>
+  {% for alert in page.items %}<tr><td><a href="{{ url_for('web.alert_detail',alert_id=alert.id) }}">{{ alert.title }}</a><small>{{ alert.rule_id }} · v{{ alert.rule_version }}</small></td><td><span class="badge severity-{{ alert.severity }}">{{ alert.severity }}</span></td><td><span class="badge status-{{ alert.status }}">{{ alert.status|replace('_',' ') }}</span></td><td><span class="badge origin-{{ alert.origin }}">{{ alert.origin }}</span></td><td>{{ alert.username or '—' }}<small>{{ alert.source_ip or '—' }}</small></td><td>{{ alert.host or '—' }}</td><td>{{ alert.events|length }} event(s)<small>{{ alert.source_name or 'multiple sources' }}</small></td><td class="nowrap">{{ alert.last_seen.strftime('%Y-%m-%d %H:%M') }} UTC</td></tr>{% endfor %}
+  </tbody></table></div>{{ pager(page,'web.alerts',{'q':term,'status':status,'severity':severity}) }}{% else %}<div class="empty-state"><span class="empty-icon">◉</span><h3>No alerts match</h3><p>Import events with explicit authentication outcomes or clear the filters.</p></div>{% endif %}
+</section>
+{% endblock %}
+
+

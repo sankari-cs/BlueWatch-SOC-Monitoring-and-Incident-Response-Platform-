@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import pager %}
+{% block title %}Reports · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">CASE REPORTING</span><h1>Reports</h1><p>HTML reports are assembled from stored case, alert, and evidence records.</p></div></section>
+<div class="notice info"><strong>Evidence-backed output</strong><span>Reports contain stored analyst notes, event references, rule reasoning, severity, response approvals, and limitations. No findings are generated outside the database.</span></div>
+<section class="panel">{% if page.items %}<div class="table-wrap"><table><thead><tr><th>Case</th><th>Status</th><th>Severity</th><th>Alerts</th><th>Last updated</th><th>Report</th></tr></thead><tbody>{% for case in page.items %}<tr><td><a href="{{ url_for('web.case_detail',case_id=case.id) }}">{{ case.case_number }}</a><small>{{ case.title }}</small></td><td><span class="badge status-{{ case.status }}">{{ case.status }}</span></td><td><span class="badge severity-{{ case.severity }}">{{ case.severity }}</span></td><td>{{ case.alerts|length }}</td><td>{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td><td><a class="button secondary small" href="{{ url_for('web.case_report',case_id=case.id) }}">Open HTML</a></td></tr>{% endfor %}</tbody></table></div>{{ pager(page,'web.reports') }}{% else %}<div class="empty-state"><span class="empty-icon">▧</span><h3>No case reports</h3><p>Create and investigate a case to generate an evidence-backed report.</p><a class="text-link" href="{{ url_for('web.incidents') }}">Go to incidents →</a></div>{% endif %}</section>
+{% endblock %}

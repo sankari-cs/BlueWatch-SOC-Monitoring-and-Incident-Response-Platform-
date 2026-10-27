@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Playbooks · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">ANALYST GUIDANCE</span><h1>Response playbooks</h1><p>Documented investigation steps for authentication scenarios. Actions remain human-controlled.</p></div></section>
+<div class="notice warning"><strong>No automatic response</strong><span>These playbooks recommend checks and documentation. BlueWatch does not disable accounts, isolate hosts, block traffic, or run commands.</span></div>
+<div class="playbook-grid">{% for playbook in playbooks %}<article class="panel playbook-card"><div class="playbook-number">0{{ loop.index }}</div><span class="eyebrow">{{ playbook.scenario }}</span><h2>{{ playbook.title }}</h2><ol>{% for step in playbook.steps %}<li>{{ step }}</li>{% endfor %}</ol><a class="text-link" href="{{ url_for('web.incidents') }}">Open incident workspace →</a></article>{% endfor %}</div>
+{% endblock %}

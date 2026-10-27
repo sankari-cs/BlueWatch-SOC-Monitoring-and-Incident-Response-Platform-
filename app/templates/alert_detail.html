@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Alert #{{ alert.id }} · BlueWatch{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('web.alerts') }}">Alerts</a><span>/</span><span>Alert #{{ alert.id }}</span></div>
+<section class="page-heading"><div><span class="eyebrow">{{ alert.rule_id }} · RULE VERSION {{ alert.rule_version }}</span><h1>{{ alert.title }}</h1><p>{{ alert.summary }}</p></div><div class="chip-row"><span class="badge origin-{{ alert.origin }}">{{ alert.origin }}</span><span class="badge severity-{{ alert.severity }} large">{{ alert.severity }}</span></div></section>
+<div class="detail-grid">
+  <section class="panel"><div class="panel-heading"><div><h2>Detection reasoning</h2><p>Rule explanation and evidence-backed assessment</p></div><span class="badge status-{{ alert.status }}">{{ alert.status|replace('_',' ') }}</span></div>
+    <p class="reasoning">{{ alert.reasoning }}</p>
+    <div class="key-value-grid"><div><span>First seen</span><strong>{{ alert.first_seen.strftime('%Y-%m-%d %H:%M:%S') }} UTC</strong></div><div><span>Last seen</span><strong>{{ alert.last_seen.strftime('%Y-%m-%d %H:%M:%S') }} UTC</strong></div><div><span>Source</span><strong>{{ alert.source_name or 'Multiple' }}</strong></div><div><span>Assigned to</span><strong>{{ alert.assigned_to or 'Unassigned' }}</strong></div><div><span>Host</span><strong>{{ alert.host or 'Not present' }}</strong></div><div><span>Username</span><strong>{{ alert.username or 'Not present' }}</strong></div><div><span>Source IP</span><strong>{{ alert.source_ip or 'Not present' }}</strong></div><div><span>Linked evidence</span><strong>{{ alert.events|length }} event(s)</strong></div></div>
+    {% if mitre %}<h3>MITRE ATT&CK references</h3><div class="chip-row">{% for technique in mitre %}<span class="chip">{{ technique }}</span>{% endfor %}</div>{% endif %}
+    {% if alert.closure_rationale %}<div class="notice neutral"><strong>Closure rationale</strong><span>{{ alert.closure_rationale }}</span></div>{% endif %}
+  </section>
+  <section class="panel"><div class="panel-heading"><div><h2>Analyst triage</h2><p>All changes are added to audit history.</p></div></div>
+    <form method="post" action="{{ url_for('web.update_alert',alert_id=alert.id) }}" class="form-stack"><input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <label>Status transition<select name="status"><option value="">Keep current status</option>{% for status in allowed_statuses %}<option value="{{ status }}">{{ status|replace('_',' ')|title }}</option>{% endfor %}</select></label>
+      <label>Assign to<input name="assigned_to" maxlength="80" placeholder="Analyst name (leave empty to keep)"></label>
+      <label>Rationale<textarea name="rationale" rows="3" maxlength="4000" placeholder="Required when marking false positive or resolved"></textarea></label>
+      <button class="button primary" type="submit">Save triage</button>
+    </form>
+    <div class="subtle-note">A detection is a lead for investigation; it is not confirmation of compromise.</div>
+  </section>
+</div>
+<section class="panel"><div class="panel-heading"><div><h2>Evidence events</h2><p>Original fields are retained for traceability; normalized values are shown above.</p></div><span class="badge neutral">{{ alert.events|length }} records</span></div>
+  {% if alert.events %}<div class="table-wrap"><table><thead><tr><th>Time (UTC)</th><th>Event type / outcome</th><th>User</th><th>Source IP</th><th>Host</th><th>Provenance</th><th>Original record</th></tr></thead><tbody>{% for event in alert.events|sort(attribute='occurred_at') %}<tr><td class="nowrap">{{ event.occurred_at.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ event.event_type }}<small>{{ event.outcome or 'outcome not present' }}</small></td><td>{{ event.username or '—' }}</td><td>{{ event.source_ip or '—' }}</td><td>{{ event.host or '—' }}</td><td><span class="badge origin-{{ event.origin }}">{{ event.origin }}</span><small>{{ event.source_name }} · {{ event.source_identifier or event.event_uid[:12] }}</small></td><td><details><summary>View JSON</summary><pre class="evidence-json">{{ event.original_fields|tojson(indent=2) }}</pre></details></td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-inline">No linked event records.</div>{% endif %}
+</section>
+<section class="panel"><div class="panel-heading"><div><h2>Correlations</h2><p>Relationships require at least two matching entity fields within the configured time window.</p></div></div>
+  {% if related %}<div class="correlation-list">{% for peer, detail in related %}<a class="correlation-item" href="{{ url_for('web.alert_detail',alert_id=peer.id) }}"><span><strong>{{ peer.title }}</strong><small>Alert #{{ peer.id }} · {{ peer.first_seen.strftime('%Y-%m-%d %H:%M') }} UTC</small></span><span><span class="chip-row">{% for field in detail.matched_fields %}<span class="chip">{{ field }}</span>{% endfor %}</span><small>Matched values: {% for field in detail.matched_fields %}{{ field }}={{ detail.matched_values[field] }}{% if not loop.last %}; {% endif %}{% endfor %} · {{ detail.correlation_window_minutes }} minute window</small></span></a>{% endfor %}</div>{% else %}<div class="empty-inline">No qualifying relationships found. A shared username or IP by itself is not considered a correlation.</div>{% endif %}
+</section>
+{% endblock %}
+
+

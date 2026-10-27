@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}BlueWatch SOC{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="{{ url_for('web.overview') }}"><span class="brand-mark">B</span><span>BlueWatch<small>SOC WORKSPACE</small></span></a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav>
+        <a class="nav-link {% if request.endpoint == 'web.overview' %}active{% endif %}" href="{{ url_for('web.overview') }}"><span>▦</span> Overview</a>
+        <a class="nav-link {% if request.endpoint in ['web.alerts','web.alert_detail'] %}active{% endif %}" href="{{ url_for('web.alerts') }}"><span>◉</span> Alerts</a>
+        <a class="nav-link {% if request.endpoint == 'web.incidents' or request.endpoint == 'web.case_detail' %}active{% endif %}" href="{{ url_for('web.incidents') }}"><span>▤</span> Incidents</a>
+        <a class="nav-link {% if request.endpoint == 'web.investigation' %}active{% endif %}" href="{{ url_for('web.investigation') }}"><span>⌕</span> Investigation</a>
+        <a class="nav-link {% if request.endpoint == 'web.ingest' %}active{% endif %}" href="{{ url_for('web.ingest') }}"><span>⇧</span> Data ingestion</a>
+      </nav>
+      <div class="nav-label">REFERENCE</div>
+      <nav>
+        <a class="nav-link {% if request.endpoint == 'web.rules' %}active{% endif %}" href="{{ url_for('web.rules') }}"><span>⌘</span> Detection rules</a>
+        <a class="nav-link {% if request.endpoint == 'web.playbooks' %}active{% endif %}" href="{{ url_for('web.playbooks') }}"><span>☷</span> Playbooks</a>
+        <a class="nav-link {% if request.endpoint in ['web.reports','web.case_report'] %}active{% endif %}" href="{{ url_for('web.reports') }}"><span>▧</span> Reports</a>
+        <a class="nav-link {% if request.endpoint == 'web.audit_history' %}active{% endif %}" href="{{ url_for('web.audit_history') }}"><span>◷</span> Audit history</a>
+        <a class="nav-link {% if request.endpoint == 'web.settings' %}active{% endif %}" href="{{ url_for('web.settings') }}"><span>⚙</span> Settings</a>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot"></span> Local analyst workspace<br><small>Loopback access only</small></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div><span class="eyebrow">SECURITY OPERATIONS</span><span class="top-title">BlueWatch</span></div><div class="top-meta"><span class="live-dot"></span> Local mode <span class="avatar">{{ config.get('ANALYST_NAME','A')[:1]|upper }}</span></div></header>
+      <div class="content-wrap">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}<div class="flash-stack" role="status">{% for category, message in messages %}<div class="flash {{ category }}"><span>{{ message }}</span><button type="button" class="dismiss" aria-label="Dismiss message" onclick="this.parentElement.remove()">×</button></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+        <footer class="page-footer">BlueWatch is a local investigation aid. Alerts are leads for analyst review, not confirmation of compromise.</footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

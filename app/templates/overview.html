@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Overview · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">MONITORING</span><h1>Overview</h1><p>Current workload from records stored in this BlueWatch database.</p></div><a class="button primary" href="{{ url_for('web.ingest') }}">Import telemetry <span aria-hidden="true">→</span></a></section>
+<div class="notice info"><strong>Local-first workspace</strong><span>Counts reflect stored records only. No telemetry is present until you import it; the synthetic fixture is labeled separately.</span></div>
+<section class="metric-grid" aria-label="Stored data metrics">
+  <article class="metric-card"><div class="metric-label">Stored events</div><div class="metric-value">{{ counts.events }}</div><div class="metric-foot">{{ counts.imported_events }} imported · {{ counts.synthetic_events }} synthetic</div></article>
+  <article class="metric-card"><div class="metric-label">Open alerts</div><div class="metric-value">{{ counts.open_alerts }}</div><div class="metric-foot">Excludes resolved and false-positive</div></article>
+  <article class="metric-card"><div class="metric-label">Active cases</div><div class="metric-value">{{ counts.cases_open }}</div><div class="metric-foot">Open or investigating</div></article>
+  <article class="metric-card"><div class="metric-label">Resolved cases</div><div class="metric-value">{{ counts.incidents_closed }}</div><div class="metric-foot">Resolved or closed</div></article>
+</section>
+<section class="two-col">
+  <article class="panel"><div class="panel-heading"><div><h2>Recent alerts</h2><p>Latest detection records</p></div><a class="text-link" href="{{ url_for('web.alerts') }}">View all →</a></div>
+    {% if recent_alerts %}<div class="table-wrap"><table><thead><tr><th>Alert</th><th>Origin</th><th>Severity</th><th>Status</th><th>Last seen</th></tr></thead><tbody>{% for alert in recent_alerts %}<tr><td><a href="{{ url_for('web.alert_detail', alert_id=alert.id) }}">{{ alert.title }}</a><small>{{ alert.rule_id }}</small></td><td><span class="badge origin-{{ alert.origin }}">{{ alert.origin }}</span></td><td><span class="badge severity-{{ alert.severity }}">{{ alert.severity }}</span></td><td><span class="badge status-{{ alert.status }}">{{ alert.status|replace('_',' ') }}</span></td><td>{{ alert.last_seen.strftime('%Y-%m-%d %H:%M') }} UTC</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><span class="empty-icon">◉</span><h3>No alerts yet</h3><p>Import validated telemetry to evaluate the authentication rules.</p><a href="{{ url_for('web.ingest') }}" class="text-link">Go to ingestion →</a></div>{% endif %}
+  </article>
+  <article class="panel"><div class="panel-heading"><div><h2>Severity distribution</h2><p>Stored alerts by rule-assigned severity</p></div></div>
+    <div class="severity-list">{% for name, count in severity_counts.items() %}<div class="severity-row"><span class="badge severity-{{ name }}">{{ name }}</span><div class="bar-track"><div class="bar severity-bar-{{ name }}" style="width: {{ (count * 100 / (severity_counts.values()|sum if severity_counts.values()|sum else 1))|round(0,'floor') }}%"></div></div><strong>{{ count }}</strong></div>{% endfor %}</div>
+    <div class="subtle-note">Severity is assigned by the detection rule. It is not a finding that an incident is confirmed.</div>
+  </article>
+</section>
+<section class="panel"><div class="panel-heading"><div><h2>Recent ingestion runs</h2><p>Validation and deduplication outcomes</p></div><a class="text-link" href="{{ url_for('web.ingest') }}">Import data →</a></div>
+{% if recent_runs %}<div class="table-wrap"><table><thead><tr><th>Run</th><th>Source</th><th>Origin</th><th>Accepted</th><th>Rejected</th><th>Skipped</th><th>Duplicates</th><th>Time</th></tr></thead><tbody>{% for run in recent_runs %}<tr><td>#{{ run.id }}</td><td>{{ run.source_name }}</td><td><span class="badge origin-{{ run.origin }}">{{ run.origin }}</span></td><td>{{ run.accepted }}</td><td>{{ run.rejected }}</td><td>{{ run.skipped }}</td><td>{{ run.duplicates }}</td><td>{{ run.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-inline">No imports recorded yet.</div>{% endif %}
+</section>
+{% endblock %}
+

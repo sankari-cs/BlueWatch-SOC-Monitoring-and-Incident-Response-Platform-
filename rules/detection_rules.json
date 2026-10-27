@@ -1,0 +1,24 @@
+[
+  {
+    "id": "BW-AUTH-001",
+    "version": "1.0.0",
+    "name": "Repeated authentication failures",
+    "description": "Finds a burst of failed authentication events for the same recorded username and source IP.",
+    "required_fields": ["event_type=authentication", "outcome=failure", "username", "source_ip", "timestamp"],
+    "severity": "high",
+    "logic": "At least BLUEWATCH_FAILED_AUTH_THRESHOLD failures for one username and source IP within BLUEWATCH_FAILED_AUTH_WINDOW_MINUTES.",
+    "false_positive_limitations": "Password managers, stale services, shared NAT addresses, and user mistakes can create bursts. Review host context and source provenance before assigning intent.",
+    "mitre_attack": ["T1110"]
+  },
+  {
+    "id": "BW-AUTH-002",
+    "version": "1.0.0",
+    "name": "Authentication failures followed by success",
+    "description": "Finds one or more failed authentication events followed by a success for the same recorded username and source IP.",
+    "required_fields": ["event_type=authentication", "outcome", "username", "source_ip", "timestamp"],
+    "severity": "medium",
+    "logic": "A successful authentication is preceded by one or more failures for the same username and source IP within BLUEWATCH_AUTH_SEQUENCE_WINDOW_MINUTES.",
+    "false_positive_limitations": "A user correcting a mistyped password can produce this sequence. This is an investigative lead, not proof that credentials were abused.",
+    "mitre_attack": ["T1110", "T1078"]
+  }
+]

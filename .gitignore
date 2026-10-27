@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Local settings, databases, logs, and runtime data
+.env
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.log

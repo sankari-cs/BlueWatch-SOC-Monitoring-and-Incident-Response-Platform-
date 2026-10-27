@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "_pagination.html" import pager %}
+{% block title %}Incidents · BlueWatch{% endblock %}
+{% block content %}
+<section class="page-heading"><div><span class="eyebrow">CASE MANAGEMENT</span><h1>Incidents</h1><p>Create evidence-backed cases, assign ownership, record decisions, and track response approvals.</p></div></section>
+<div class="two-col align-start">
+  <section class="panel"><div class="panel-heading"><div><h2>Create a case</h2><p>Start an investigation and optionally link stored alerts.</p></div></div>
+    <form method="post" action="{{ url_for('web.create_case') }}" class="form-stack"><input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <label>Case title<input name="title" required maxlength="255" placeholder="Short investigation summary"></label>
+      <div class="form-row"><label>Severity<select name="severity">{% for severity in ['critical','high','medium','low','info'] %}<option value="{{ severity }}" {% if severity=='medium' %}selected{% endif %}>{{ severity|title }}</option>{% endfor %}</select></label><label>Owner<input name="owner" maxlength="80" value="{{ config.get('ANALYST_NAME','local-analyst') }}"></label></div>
+      <fieldset><legend>Link alerts</legend>{% if open_alerts %}<div class="checkbox-list">{% for alert in open_alerts %}<label class="checkbox-option"><input type="checkbox" name="alert_ids" value="{{ alert.id }}"><span>{{ alert.title }} <small>#{{ alert.id }} · {{ alert.severity }} · {{ alert.status }}</small></span></label>{% endfor %}</div>{% else %}<p class="subtle-note">No open alerts available. You can link an alert later.</p>{% endif %}</fieldset>
+      <button class="button primary" type="submit">Create investigation case</button>
+    </form>
+  </section>
+  <section class="panel"><div class="panel-heading"><div><h2>Case workflow</h2><p>Stored locally with an audit trail</p></div></div><div class="workflow-steps"><div><span>1</span><p><strong>Link evidence</strong><small>Alerts and source event references remain traceable.</small></p></div><div><span>2</span><p><strong>Investigate</strong><small>Add analyst notes, ownership, and response proposals.</small></p></div><div><span>3</span><p><strong>Resolve</strong><small>Provide a rationale before closing a case.</small></p></div></div><div class="notice warning"><strong>Human-approved response only</strong><span>BlueWatch records proposed actions and approvals. It does not disable accounts, isolate hosts, or block traffic.</span></div></section>
+</div>
+<section class="panel"><div class="panel-heading"><div><h2>Cases</h2><p>{{ page.total }} stored case(s)</p></div></div>
+<form method="get" class="filter-bar"><label class="search-field"><span aria-hidden="true">⌕</span><input name="q" value="{{ term }}" placeholder="Search case title, owner, ID"></label><label>Status<select name="status"><option value="">All statuses</option>{% for item in ['open','investigating','resolved','closed'] %}<option value="{{ item }}" {% if status==item %}selected{% endif %}>{{ item|title }}</option>{% endfor %}</select></label><button class="button secondary" type="submit">Filter</button></form>
+{% if page.items %}<div class="table-wrap"><table><thead><tr><th>Case</th><th>Severity</th><th>Status</th><th>Owner</th><th>Alerts</th><th>Updated</th></tr></thead><tbody>{% for case in page.items %}<tr><td><a href="{{ url_for('web.case_detail',case_id=case.id) }}">{{ case.case_number }}</a><small>{{ case.title }}</small></td><td><span class="badge severity-{{ case.severity }}">{{ case.severity }}</span></td><td><span class="badge status-{{ case.status }}">{{ case.status }}</span></td><td>{{ case.owner or 'Unassigned' }}</td><td>{{ case.alerts|length }}</td><td>{{ case.updated_at.strftime('%Y-%m-%d %H:%M') }} UTC</td></tr>{% endfor %}</tbody></table></div>{{ pager(page,'web.incidents',{'q':term,'status':status}) }}{% else %}<div class="empty-state"><span class="empty-icon">▤</span><h3>No cases yet</h3><p>Create a case when an alert requires coordinated investigation.</p></div>{% endif %}
+</section>
+{% endblock %}

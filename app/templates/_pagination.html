@@ -1,0 +1,11 @@
+{% macro pager(page, endpoint, kwargs={}) %}
+{% if page.pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  <span>Page {{ page.page }} of {{ page.pages }} · {{ page.total }} records</span>
+  <div class="pager-actions">
+    {% if page.has_prev %}<a class="button secondary small" href="{{ url_for(endpoint, page=page.prev_num, **kwargs) }}">Previous</a>{% endif %}
+    {% if page.has_next %}<a class="button secondary small" href="{{ url_for(endpoint, page=page.next_num, **kwargs) }}">Next</a>{% endif %}
+  </div>
+</nav>
+{% endif %}
+{% endmacro %}
