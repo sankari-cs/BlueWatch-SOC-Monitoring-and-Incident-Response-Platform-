@@ -1,4 +1,4 @@
-# BlueWatch SOC Platform
+﻿# BlueWatch SOC Platform
 
 BlueWatch is a local-first SOC monitoring and incident investigation application built with Flask, SQLAlchemy, SQLite, server-rendered HTML, and vanilla CSS. It imports validated event exports, preserves source evidence, evaluates explainable authentication rules, and supports analyst triage, correlation, cases, response documentation, audit history, and evidence-backed HTML reports.
 
